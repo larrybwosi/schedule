@@ -10,6 +10,9 @@ export type Activity = {
   description?: string
 }
 
+export const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
+
+
 export  const initialSchedule: Activity[] = [
   { id: '1', day: 'Monday', time: '07:00', duration: 45, name: 'Laundry', isFixed: true },
   { id: '2', day: 'Monday', time: '08:00', duration: 70, name: 'Meeting Preparation', isFixed: true },
