@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import Link from 'next/link'
 
 export default function SignUpPage() {
   const [email, setEmail] = useState('')
@@ -142,10 +143,10 @@ export default function SignUpPage() {
             </p>
             <div className="flex items-center justify-center space-x-1 text-sm">
               <span className="text-gray-500 dark:text-gray-400">Already have an account?</span>
-              <Button variant="link" className="text-purple-600 hover:text-purple-700">
+              <Link href="/sign-in" className="text-purple-600 hover:text-purple-700">
                 <ArrowLeft className="w-4 h-4 mr-1" />
                 Sign in
-              </Button>
+              </Link>
             </div>
           </CardFooter>
         </Card>

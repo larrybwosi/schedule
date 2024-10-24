@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from 'react'
+import React from 'react'
 import { motion } from 'framer-motion'
 import { Plus, Clock, Tag, ChevronLeft, ChevronRight } from 'lucide-react'
 import { Button } from "@/components/ui/button"
@@ -11,32 +11,38 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
-import { Textarea } from "@/components/ui/textarea"
-import { toast } from "sonner"
+import { Textarea } from "@/components/ui/textarea" 
 import { format, addWeeks, startOfWeek, endOfWeek } from 'date-fns'
+import { useToast } from '@/hooks/use-toast'
+import { observer, useObservable } from '@legendapp/state/react'
 
 const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday']
 
-export default function EnhancedAddNewActivity() {
-  const [newActivity, setNewActivity] = useState({
+const initialState = {
+  newActivity: {
     name: '',
     day: 'Monday',
     time: '',
     duration: 30,
     description: '',
     isRecurring: false,
-    tags: [],
-  })
-  const [selectedWeek, setSelectedWeek] = useState(new Date())
+    tags: [] as string[],
+  },
+  selectedWeek: new Date(),
+}
+
+function EnhancedAddNewActivity() {
+  const state = useObservable(initialState)
+  const { toast } = useToast()
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    console.log('New activity:', newActivity)
+    console.log('New activity:', state.newActivity.get())
     toast({
       title: "Activity Added",
-      description: `${newActivity.name} has been added to your schedule for ${format(selectedWeek, 'MMMM d, yyyy')}.`,
+      description: `${state.newActivity.name.get()} has been added to your schedule for ${format(state.selectedWeek.get(), 'MMMM d, yyyy')}.`,
     })
-    setNewActivity({
+    state.newActivity.set({
       name: '',
       day: 'Monday',
       time: '',
@@ -48,7 +54,21 @@ export default function EnhancedAddNewActivity() {
   }
 
   const changeWeek = (direction: 'prev' | 'next') => {
-    setSelectedWeek(prevWeek => addWeeks(prevWeek, direction === 'next' ? 1 : -1))
+    state.selectedWeek.set(prevWeek => addWeeks(prevWeek, direction === 'next' ? 1 : -1))
+  }
+
+  const formatDuration = (minutes: number) => {
+    const days = Math.floor(minutes / 1440)
+    const hours = Math.floor((minutes % 1440) / 60)
+    const remainingMinutes = minutes % 60
+
+    if (days > 0) {
+      return `${days} day${days > 1 ? 's' : ''} ${hours} hr${hours !== 1 ? 's' : ''} ${remainingMinutes} min`
+    } else if (hours > 0) {
+      return `${hours} hr${hours !== 1 ? 's' : ''} ${remainingMinutes} min`
+    } else {
+      return `${remainingMinutes} min`
+    }
   }
 
   return (
@@ -70,7 +90,7 @@ export default function EnhancedAddNewActivity() {
               <ChevronLeft className="w-4 h-4 mr-2" /> Previous Week
             </Button>
             <div className="text-lg font-semibold text-indigo-700">
-              {format(startOfWeek(selectedWeek), 'MMM d')} - {format(endOfWeek(selectedWeek), 'MMM d, yyyy')}
+              {format(startOfWeek(state.selectedWeek.get()), 'MMM d')} - {format(endOfWeek(state.selectedWeek.get()), 'MMM d, yyyy')}
             </div>
             <Button variant="outline" onClick={() => changeWeek('next')}>
               Next Week <ChevronRight className="w-4 h-4 ml-2" />
@@ -88,8 +108,8 @@ export default function EnhancedAddNewActivity() {
               </Label>
               <Input 
                 id="activity-name"
-                value={newActivity.name} 
-                onChange={(e) => setNewActivity({...newActivity, name: e.target.value})}
+                value={state.newActivity.name.get()} 
+                onChange={(e) => state.newActivity.name.set(e.target.value)}
                 placeholder="Enter activity name"
                 className="w-full px-3 py-2 border border-indigo-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
               />
@@ -106,8 +126,8 @@ export default function EnhancedAddNewActivity() {
                   Day
                 </Label>
                 <Select 
-                  value={newActivity.day} 
-                  onValueChange={(value) => setNewActivity({...newActivity, day: value})}
+                  value={state.newActivity.day.get()} 
+                  onValueChange={(value) => state.newActivity.day.set(value)}
                 >
                   <SelectTrigger id="activity-day">
                     <SelectValue placeholder="Select a day" />
@@ -128,8 +148,8 @@ export default function EnhancedAddNewActivity() {
                   <Input 
                     id="activity-time"
                     type="time"
-                    value={newActivity.time} 
-                    onChange={(e) => setNewActivity({...newActivity, time: e.target.value})}
+                    value={state.newActivity.time.get()} 
+                    onChange={(e) => state.newActivity.time.set(e.target.value)}
                     className="w-full pl-10 pr-3 py-2 border border-indigo-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
                   />
                   <Clock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-indigo-400" size={16} />
@@ -144,15 +164,15 @@ export default function EnhancedAddNewActivity() {
               transition={{ delay: 0.4 }}
             >
               <Label htmlFor="activity-duration" className="text-sm font-medium text-indigo-700">
-                Duration: {newActivity.duration} minutes
+                Duration: {formatDuration(state.newActivity.duration.get())}
               </Label>
               <Slider
                 id="activity-duration"
                 min={5}
-                max={240}
+                max={10080}
                 step={5}
-                value={[newActivity.duration]}
-                onValueChange={(value) => setNewActivity({...newActivity, duration: value[0]})}
+                value={[state.newActivity.duration.get()]}
+                onValueChange={(value) => state.newActivity.duration.set(value[0])}
                 className="w-full"
               />
             </motion.div>
@@ -168,8 +188,8 @@ export default function EnhancedAddNewActivity() {
               </Label>
               <Textarea 
                 id="activity-description"
-                value={newActivity.description} 
-                onChange={(e) => setNewActivity({...newActivity, description: e.target.value})}
+                value={state.newActivity.description.get()} 
+                onChange={(e) => state.newActivity.description.set(e.target.value)}
                 placeholder="Add any additional details..."
                 className="w-full px-3 py-2 border border-indigo-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500"
               />
@@ -183,8 +203,8 @@ export default function EnhancedAddNewActivity() {
             >
               <Switch
                 id="activity-recurring"
-                checked={newActivity.isRecurring}
-                onCheckedChange={(checked) => setNewActivity({...newActivity, isRecurring: checked})}
+                checked={state.newActivity.isRecurring.get()}
+                onCheckedChange={(checked) => state.newActivity.isRecurring.set(checked)}
               />
               <Label htmlFor="activity-recurring" className="text-sm font-medium text-indigo-700">
                 Recurring Activity
@@ -200,7 +220,7 @@ export default function EnhancedAddNewActivity() {
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start">
                     <Tag className="mr-2 h-4 w-4" />
-                    {newActivity.tags.length > 0 ? `${newActivity.tags.length} tags selected` : "Add tags"}
+                    {state.newActivity.tags.get().length > 0 ? `${state.newActivity.tags.get().length} tags selected` : "Add tags"}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-80">
@@ -212,12 +232,12 @@ export default function EnhancedAddNewActivity() {
                           key={tag}
                           variant="outline"
                           size="sm"
-                          className={newActivity.tags.includes(tag) ? 'bg-indigo-100 text-indigo-700' : ''}
+                          className={state.newActivity.tags.get().includes(tag) ? 'bg-indigo-100 text-indigo-700' : ''}
                           onClick={() => {
-                            const newTags = newActivity.tags.includes(tag)
-                              ? newActivity.tags.filter(t => t !== tag)
-                              : [...newActivity.tags, tag]
-                            setNewActivity({...newActivity, tags: newTags})
+                            const newTags = state.newActivity.tags.get().includes(tag)
+                              ? state.newActivity.tags.get().filter(t => t !== tag)
+                              : [...state.newActivity.tags.get(), tag]
+                            state.newActivity.tags.set(newTags)
                           }}
                         >
                           {tag}
@@ -245,3 +265,5 @@ export default function EnhancedAddNewActivity() {
     </Card>
   )
 }
+
+export default observer(EnhancedAddNewActivity)

@@ -12,6 +12,13 @@ export const auth = betterAuth({
   emailAndPassword: {  
     enabled: true
   },
+  accountLinking: {
+    enabled: true,
+    trustedProviders: ["google", "github"],
+  },
+  advanced: {
+    useSecureCookies: true,
+  },
   socialProviders: { 
     github: { 
     clientId: process.env.GITHUB_CLIENT_ID!, 
@@ -29,7 +36,14 @@ export const auth = betterAuth({
 });
 
 export const authClient = createAuthClient({
-  baseURL: process.env.BETTER_AUTH_URL
+  baseURL: process.env.BETTER_AUTH_URL,
+  plugins: [
+    twoFactor({  
+      issuer: "Clevery"
+    }),
+    organizationClient(),
+    admin()
+  ]
 })
 
 export const { signIn, signUp, useSession } = createAuthClient()

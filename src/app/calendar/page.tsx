@@ -12,10 +12,17 @@ import { Switch } from '@/components/ui/switch'
 import EnhancedAddNewActivity from '@/components/activity.add'
 import { dailyRoutine, } from '@/lib/schedule'
 import WeeklySchedule from '@/components/weekly'
+import { useSession } from '@/lib/auth'
 
 export default function Component() { 
   const { theme, setTheme } = useTheme()
   const isDarkMode = theme === "dark" 
+  const {
+    data:session,
+    error
+  } = useSession()
+  console.log(session)
+  console.log(error)
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 space-y-8">

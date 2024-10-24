@@ -3,6 +3,7 @@ import { NextResponse } from "next/server";
  
 export default authMiddleware({
 	customRedirect: async (session, request) => {
+		console.log( session );
 		const baseURL = request.nextUrl.origin;
 		if (request.nextUrl.pathname === "/sign-in" && session) {
 			return NextResponse.redirect(new URL("/dashboard", baseURL));

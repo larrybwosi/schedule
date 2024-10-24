@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
+import { createAuthClient } from 'better-auth/react'
 
 export default function SignInPage() {
   const [email, setEmail] = useState('')
@@ -37,6 +38,15 @@ export default function SignInPage() {
       if (nextInput) nextInput.focus()
     }
   }
+const client = createAuthClient()
+  const handleSocialSignIn = async ( provider: 'github' | 'google' ) => {
+    const data = await client.signIn.social({
+      provider,
+      callbackURL:'/'
+    })
+    console.log(data)
+  }
+
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 to-purple-600 p-4">
@@ -61,7 +71,11 @@ export default function SignInPage() {
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 0.2, duration: 0.5 }}
             >
-              <Button variant="outline" className="w-full bg-white hover:bg-gray-100 text-gray-900 border border-gray-300">
+              <Button 
+                variant="outline" 
+                className="w-full bg-white hover:bg-gray-100 text-gray-900 border border-gray-300"
+                onClick={() => handleSocialSignIn('google')}
+              >
                 <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                   <path
                     fill="currentColor"
@@ -70,7 +84,11 @@ export default function SignInPage() {
                 </svg>
                 Sign in with Google
               </Button>
-              <Button variant="outline" className="w-full bg-gray-900 hover:bg-gray-800 text-white">
+              <Button
+               variant="outline" 
+               className="w-full bg-gray-900 hover:bg-gray-800 text-white"
+               onClick={() => handleSocialSignIn('github')}
+              >
                 <Github className="w-5 h-5 mr-2" />
                 Sign in with GitHub
               </Button>
